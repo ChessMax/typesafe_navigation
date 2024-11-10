@@ -8,9 +8,13 @@ Widget _buildHome(BuildContext context, RouteInfo<void, void> route) =>
 Widget _buildTask(BuildContext context, RouteInfo<Task, int> route) =>
     MyTaskScreen(route: route);
 
+Widget _buildEditTask(BuildContext context, RouteInfo<Task, Task> route) =>
+    EditTaskScreen(route: route);
+
 enum MyAppRoute<Arg, T> {
   home('/', _buildHome),
-  task('/task', _buildTask);
+  task('/task', _buildTask),
+  editTask('/edit-task', _buildEditTask);
 
   final String path;
   final Widget Function(BuildContext context, RouteInfo<Arg, T> route) builder;
@@ -123,6 +127,8 @@ class Task {
   final String title;
 
   Task(this.title);
+
+  Task copyWith({String? title}) => Task(title ?? this.title);
 }
 
 class MyHomeScreen extends StatelessWidget {
@@ -135,16 +141,29 @@ class MyHomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Todo list')),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () async {
-            // final result =
-            //     await MyAppRoute.task.push(context.navigator, Task('My task'));
-            // final v = await MyAppRoute.home.push(context.navigator);
-            final result = await context.navigator
-                .pushRoute(MyAppRoute.task(Task('My task')));
-            debugPrint('pop result: $result');
-          },
-          child: const Text('Open task'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () async {
+                // final result =
+                //     await MyAppRoute.task.push(context.navigator, Task('My task'));
+                // final v = await MyAppRoute.home.push(context.navigator);
+                final result = await context.navigator
+                    .pushRoute(MyAppRoute.task(Task('My task')));
+                debugPrint('pop result: $result');
+              },
+              child: const Text('Open task'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final result = await context.navigator
+                    .pushRoute(MyAppRoute.editTask(Task('My task')));
+                debugPrint('pop result: $result');
+              },
+              child: const Text('Edit task'),
+            ),
+          ],
         ),
       ),
     );
@@ -172,6 +191,40 @@ class MyTaskScreen extends StatelessWidget {
               onPressed: () => route.pop(context.navigator, 2),
               child: const Text('Pop 2'),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class EditTaskScreen extends StatelessWidget {
+  final RouteInfo<Task, Task> route;
+
+  const EditTaskScreen({required this.route, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final task = route.args;
+    return Scaffold(
+      appBar: AppBar(
+          title:
+              Text(task != null ? 'Edit task "${task.title}"' : 'Create task')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (task != null)
+              ElevatedButton(
+                onPressed: () => route.pop(context.navigator,
+                    task.copyWith(title: '${task.title} (edited)')),
+                child: const Text('Save'),
+              )
+            else
+              ElevatedButton(
+                onPressed: () => route.pop(context.navigator, Task('New task')),
+                child: const Text('Create'),
+              ),
           ],
         ),
       ),
