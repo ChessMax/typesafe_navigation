@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 void main() => runApp(const MyApp2());
 
-Widget _buildHome(BuildContext context, MyRoute<void, void> route) =>
+Widget _buildHome(BuildContext context, RouteInfo<void, void> route) =>
     MyHomeScreen(route: route);
 
-Widget _buildTask(BuildContext context, MyRoute<Task, int> route) =>
+Widget _buildTask(BuildContext context, RouteInfo<Task, int> route) =>
     MyTaskScreen(route: route);
 
 enum MyAppRoute<Arg, T> {
@@ -13,7 +13,7 @@ enum MyAppRoute<Arg, T> {
   task('/task', _buildTask);
 
   final String path;
-  final Widget Function(BuildContext context, MyRoute<Arg, T> route) builder;
+  final Widget Function(BuildContext context, RouteInfo<Arg, T> route) builder;
 
   const MyAppRoute(this.path, this.builder);
 
@@ -33,7 +33,7 @@ enum MyAppRoute<Arg, T> {
 
   Route<dynamic>? _buildRoute(Object? arguments) {
     if (arguments is Arg) {
-      final route = MyRoute<Arg, T>(path: path, args: arguments);
+      final route = RouteInfo<Arg, T>(arguments);
       final screen =
           MaterialPageRoute<T>(builder: (context) => builder(context, route));
       return screen;
@@ -71,11 +71,11 @@ extension B2<Arg extends Object, T> on MyAppRoute<Arg, T> {
   void pop(NavigatorState navigator, T? result) => navigator.pop(result);
 }
 
-extension B3<T> on MyRoute<void, T> {
+extension B3<T> on RouteInfo<void, T> {
   void pop(NavigatorState navigator) => navigator.pop();
 }
 
-extension B4<Arg extends Object, T> on MyRoute<Arg, T> {
+extension B4<Arg extends Object, T> on RouteInfo<Arg, T> {
   void pop(NavigatorState navigator, T? result) => navigator.pop(result);
 }
 
@@ -110,14 +110,14 @@ extension type RoutePopInfo<Arg, T>._(
 }
 
 typedef MyRouteBuilder<Arg, T> = Widget Function(
-    BuildContext context, MyRoute<Arg, T> route);
+    BuildContext context, RouteInfo<Arg, T> route);
 
-class MyRoute<Arg, T> {
-  final String path;
-  final Arg args;
-
-  const MyRoute({required this.path, required this.args});
-}
+// class RouteInfo<Arg, T> {
+//   final Arg args;
+//
+//   const RouteInfo({required this.args});
+// }
+extension type const RouteInfo<Arg, T>(Arg args) {}
 
 class Task {
   final String title;
@@ -126,7 +126,7 @@ class Task {
 }
 
 class MyHomeScreen extends StatelessWidget {
-  final MyRoute<void, void> route;
+  final RouteInfo<void, void> route;
 
   const MyHomeScreen({required this.route, super.key});
 
@@ -152,7 +152,7 @@ class MyHomeScreen extends StatelessWidget {
 }
 
 class MyTaskScreen extends StatelessWidget {
-  final MyRoute<Task, int> route;
+  final RouteInfo<Task, int> route;
 
   const MyTaskScreen({required this.route, super.key});
 
